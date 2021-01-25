@@ -1,7 +1,10 @@
 import Searchbar from './components/Searchbar/Searchbar';
 import ImageGallery from './components/ImageGallery/ImageGallery';
-// import images from './components/ImageGallery/data.json';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 import { Component } from 'react';
+
 // import imageAPI from './services/imageAPI';
 
 class App extends Component {
@@ -10,7 +13,7 @@ class App extends Component {
   };
 
   handleSearch = query => {
-    this.setState({ query });
+    this.setState({ query: query });
   };
 
   render() {
@@ -19,6 +22,8 @@ class App extends Component {
       <>
         <Searchbar onSubmit={this.handleSearch} />
         <ImageGallery query={query} />
+
+        <ToastContainer position="top-left" autoClose={3000} />
       </>
     );
   }

@@ -1,44 +1,113 @@
 import ImageGalleryItem from './ImageGalleryItem';
-import { Component } from 'react';
+import { Component, Fragment } from 'react';
 import imageAPI from '../../services/imageAPI';
+import Button from '../Button/Button';
+import { toast } from 'react-toastify';
+import Loader from 'react-loader-spinner';
 
 class ImageGallery extends Component {
   state = {
     images: [],
     status: 'idle',
+    page: 1,
+    error: null,
+    loader: true,
   };
 
   componentDidUpdate(prevProps, prevState) {
     const prevSearchQuery = prevProps.query;
     const nextSearchQuery = this.props.query;
-    console.log(nextSearchQuery);
+
+    const prevPage = prevState.page;
+    const nextPage = this.state.page;
+
     if (prevSearchQuery !== nextSearchQuery) {
+      this.setState({ loader: true });
       imageAPI
-        .fetchImage(nextSearchQuery)
-        .then(images => this.setState({ images, status: 'resolved' }));
+        .fetchImage(nextSearchQuery, 1)
+        .then(images => {
+          this.setState({
+            images: images,
+            status: 'resolved',
+            loader: false,
+          });
+          if (images.length === 0) {
+            toast.warn(
+              'No results were found for this request, please enter a more specific request',
+            );
+          }
+        })
+        .catch(error => this.setState({ error, status: 'rejected' }));
+    }
+
+    if (prevPage !== nextPage) {
+      this.setState({ loader: true });
+
+      imageAPI
+        .fetchImage(nextSearchQuery, nextPage)
+        .then(images => {
+          this.setState({
+            images: [...prevState.images, ...images],
+            status: 'resolved',
+            loader: false,
+          });
+
+          this.scrollToBottom();
+        })
+        .catch(error => this.setState({ error, status: 'rejected' }));
     }
   }
+
+  handleClickLoadMore = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
+  };
+
+  scrollToBottom = () => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth',
+    });
+  };
+
   render() {
-    const { status } = this.state;
-    const { images } = this.state;
+    const { status, images, error, loader } = this.state;
+
     if (status === 'idle') {
-      return <p>Enter query</p>;
+      return <></>;
     }
     if (status === 'resolved') {
-      return <p>Resolved</p>;
+      return (
+        <Fragment>
+          <ul className="ImageGallery">
+            {images.map(({ tags, webformatURL }, index) => (
+              <ImageGalleryItem
+                key={index}
+                id={index}
+                tags={tags}
+                webformatURL={webformatURL}
+              />
+            ))}
+          </ul>
+          {images.length > 0 && <Button onClick={this.handleClickLoadMore} />}
+
+          <Loader
+            visible={loader}
+            className="Loader"
+            type="ThreeDots"
+            color="#00BFFF"
+            height={80}
+            width={80}
+          />
+        </Fragment>
+      );
+    }
+
+    if (status === 'rejected') {
+      return <p>{error.message}</p>;
     }
   }
 }
 
-//  <ul className="ImageGallery">
-//    {images.map(({ id, tags, webformatURL }) => (
-//      <ImageGalleryItem
-//        key={id}
-//        id={id}
-//        tags={tags}
-//        webformatURL={webformatURL}
-//      />
-//    ))}
-//  </ul>;
-
 export default ImageGallery;
+
+// toast.error("No results were found for this request, please enter a more specific request")

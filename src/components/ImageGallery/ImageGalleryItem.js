@@ -1,5 +1,4 @@
 export default function ImageGalleryItem({ id, tags, webformatURL }) {
-  //   const { webformatURL } = image;
   return (
     <li className="ImageGalleryItem">
       <img

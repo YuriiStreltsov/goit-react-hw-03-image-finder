@@ -12,7 +12,7 @@ class Searchbar extends Component {
   handleSubmit = e => {
     e.preventDefault();
     if (this.state.query.trim() === '') {
-      toast.error('Введите свой запрос');
+      toast.error('This field cannot be empty');
       return;
     }
 
@@ -29,6 +29,7 @@ class Searchbar extends Component {
 
           <input
             onChange={this.handleChange}
+            value={this.state.query}
             className="SearchForm-input"
             type="text"
             autoComplete="off"
