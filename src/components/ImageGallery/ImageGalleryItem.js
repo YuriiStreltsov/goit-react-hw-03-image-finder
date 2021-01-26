@@ -1,4 +1,6 @@
-export default function ImageGalleryItem({ id, tags, webformatURL }) {
+import PropTypes from 'prop-types';
+
+function ImageGalleryItem({ id, tags, webformatURL }) {
   return (
     <li className="ImageGalleryItem">
       <img
@@ -10,3 +12,11 @@ export default function ImageGalleryItem({ id, tags, webformatURL }) {
     </li>
   );
 }
+
+ImageGalleryItem.propTypes = {
+  id: PropTypes.number.isRequired,
+  tags: PropTypes.string.isRequired,
+  webformatURL: PropTypes.string.isRequired,
+};
+
+export default ImageGalleryItem;

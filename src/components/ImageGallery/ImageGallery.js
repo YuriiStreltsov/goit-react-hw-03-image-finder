@@ -128,6 +128,7 @@ class ImageGallery extends Component {
 }
 
 ImageGallery.propTypes = {
+  onOpenModal: PropTypes.func.isRequired,
   query: PropTypes.string.isRequired,
 };
 
