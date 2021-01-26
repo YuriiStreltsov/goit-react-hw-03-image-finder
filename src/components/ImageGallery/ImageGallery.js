@@ -3,7 +3,9 @@ import { Component, Fragment } from 'react';
 import imageAPI from '../../services/imageAPI';
 import Button from '../Button/Button';
 import { toast } from 'react-toastify';
+
 import Loader from 'react-loader-spinner';
+import PropTypes from 'prop-types';
 
 class ImageGallery extends Component {
   state = {
@@ -14,13 +16,7 @@ class ImageGallery extends Component {
     loader: true,
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    const prevSearchQuery = prevProps.query;
-    const nextSearchQuery = this.props.query;
-
-    const prevPage = prevState.page;
-    const nextPage = this.state.page;
-
+  fetchOnSubmitForm = (prevSearchQuery, nextSearchQuery) => {
     if (prevSearchQuery !== nextSearchQuery) {
       this.setState({ loader: true });
       imageAPI
@@ -37,9 +33,11 @@ class ImageGallery extends Component {
             );
           }
         })
-        .catch(error => this.setState({ error, status: 'rejected' }));
+        .catch(e => console.log(e));
     }
+  };
 
+  fetchOnLoadMoreBtn = (prevPage, nextPage, nextSearchQuery, prevState) => {
     if (prevPage !== nextPage) {
       this.setState({ loader: true });
 
@@ -54,8 +52,22 @@ class ImageGallery extends Component {
 
           this.scrollToBottom();
         })
-        .catch(error => this.setState({ error, status: 'rejected' }));
+        .catch(error => {
+          this.setState({ status: 'rejected' });
+          console.log(error);
+        });
     }
+  };
+
+  componentDidUpdate(prevProps, prevState) {
+    const prevSearchQuery = prevProps.query;
+    const nextSearchQuery = this.props.query;
+
+    const prevPage = prevState.page;
+    const nextPage = this.state.page;
+
+    this.fetchOnSubmitForm(prevSearchQuery, nextSearchQuery);
+    this.fetchOnLoadMoreBtn(prevPage, nextPage, nextSearchQuery, prevState);
   }
 
   handleClickLoadMore = () => {
@@ -69,8 +81,19 @@ class ImageGallery extends Component {
     });
   };
 
+  findImageById = e => {
+    if (e.target.nodeName !== 'IMG') {
+      return;
+    }
+    const { images } = this.state;
+
+    const findElem = images[e.target.id];
+
+    this.props.onOpenModal(findElem);
+  };
+
   render() {
-    const { status, images, error, loader } = this.state;
+    const { status, images, loader } = this.state;
 
     if (status === 'idle') {
       return <></>;
@@ -78,7 +101,7 @@ class ImageGallery extends Component {
     if (status === 'resolved') {
       return (
         <Fragment>
-          <ul className="ImageGallery">
+          <ul onClick={this.findImageById} className="ImageGallery">
             {images.map(({ tags, webformatURL }, index) => (
               <ImageGalleryItem
                 key={index}
@@ -101,13 +124,11 @@ class ImageGallery extends Component {
         </Fragment>
       );
     }
-
-    if (status === 'rejected') {
-      return <p>{error.message}</p>;
-    }
   }
 }
 
-export default ImageGallery;
+ImageGallery.propTypes = {
+  query: PropTypes.string.isRequired,
+};
 
-// toast.error("No results were found for this request, please enter a more specific request")
+export default ImageGallery;
